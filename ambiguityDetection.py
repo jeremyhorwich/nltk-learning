@@ -22,7 +22,6 @@ def parseGrammarRule(lineOfGrammar):
 
     for combination in combinations:
         grammarRule[combination.strip("' \n")] = combinationResult
-        #print(combination.strip() + ":" + grammarRule[combination.strip()])
     return grammarRule    
 
 grammar = importGrammar("grouchoGrammar.txt")
