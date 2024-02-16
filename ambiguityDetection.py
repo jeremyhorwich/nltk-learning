@@ -25,8 +25,6 @@ def parseGrammarRule(lineOfGrammar):
     return grammarRule    
 
 grammar = importGrammar("grouchoGrammar.txt")
-
-    #Create a dictionary using left and right sides for value and key, respectively (maybe...)
      
 #Step 1: Loop through sentence and replace all of the words with their linguistic abstraction
 #Step 2: We check each element in the list (each current unit of abstraction)
