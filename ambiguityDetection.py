@@ -6,10 +6,15 @@ def importGrammar(fileName):
     grammar = open("grammars/" + fileName,"r")
     print(grammar.read())
     #Create a dictionary using left and right sides for value and key, respectively (maybe...)
-    
-#We go bottom up for this one.
-#Check to see (broadly) if any elements of the lowest level can combine with neighboring elements in more than one way
-#   For example: "elephant" -> N. N can be left-neighbored (Det N) to make NP or surrouned (Det N PP) to make NP. So
-#   we will have to check whether its righthand neighbors can be combined to make a prepositional phrase
+     
+
+#Step 1: Loop through sentence and replace all of the words with their linguistic abstraction
+#Step 2: We check each element in the list (each current unit of abstraction)
+#   For each unit, we mark down how many combinations it is applicable to in the grammar against the current list
+#   If no combinations, we skip (ie. N next to V) to the next linguistic unit
+#   If only one combination, combine. But we must check against a combination that might not exist yet (see Det N PP)
+#   If two combinations, then we break and return a fail
+#Step 3: Create a new list and run through the loop again
+#Step 4: If our list has only one element (meaning we've created an unambiguous sentence) then we quit loop and return success
     
 importGrammar("grouchoGrammar.txt")
