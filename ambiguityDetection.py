@@ -23,9 +23,29 @@ def parseGrammarRule(lineOfGrammar):
     for combination in combinations:
         grammarRule[combination.strip("' \n")] = combinationResult
     return grammarRule    
+     
+
+def detectAmbiguity(sentence, grammar):
+    sentence = sentence.strip(" .!").lower()
+    phraseList = sentence.split()
+
+    rulesByPhraseType = dict()
+    for i in range(len(phraseList)):
+        phraseList[i] = grammar[phraseList[i]]
+        if phraseList[i] not in rulesByPhraseType:
+            rulesByPhraseType[phraseList[i]] = findRulesByPhraseType(grammar, phraseList[i])
+    print(rulesByPhraseType["NP"])
+
+def findRulesByPhraseType(grammar, phrase):
+    rulesAppliedToPhrase = list()
+    for rule in grammar:
+        if phrase in rule.split():
+            rulesAppliedToPhrase.append(rule)
+    return rulesAppliedToPhrase
 
 grammar = importGrammar("grouchoGrammar.txt")
-     
+detectAmbiguity("I shot an elephant in my pajamas",grammar)
+
 #Step 1: Loop through sentence and replace all of the words with their linguistic abstraction
 #Step 2: We check each element in the list (each current unit of abstraction)
 #   For each unit, we mark down how many combinations it is applicable to in the grammar against the current list
