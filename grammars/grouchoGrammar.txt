@@ -1,6 +1,6 @@
 S -> NP VP
 PP -> P NP
-NP -> Det N | Det N PP | 'I'
+NP -> Det N | Det N PP | 'i'
 VP -> V NP | VP PP
 Det -> 'an' | 'my'
 N -> 'elephant' | 'pajamas'
