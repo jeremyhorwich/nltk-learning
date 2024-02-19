@@ -34,9 +34,37 @@ def detectAmbiguity(sentence, grammar):
 
     rulesByPhraseType = dict()
 
+    indexInSentence = 0    #I could loop using the index and save this pointer, but I think phrase is more readable than phraseList[i]
     for phrase in phraseList:
         if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
             rulesByPhraseType[phrase] = findRulesByPhraseType(grammar, phrase)
+        
+        numberOfPossibleRules = len(findRulesByPhraseType[phrase])
+        validRules = 0
+        for rule in rulesByPhraseType[phrase]:
+            if isRuleValid(indexInSentence, sentence, rule):
+                validrules += 1
+
+        if (numberOfPossibleRules == 1) and (validRules == 1):
+            phrasesToCombine.append(indexInSentence, rulesByPhraseType[phrase][0])
+        if (validRules == 2):
+            return True
+        if (numberOfPossibleRules > 1):
+            phrasesWithMultiplePossibilities.append(phrase)
+        indexInSentence += 1
+
+#Step 1: Check each element of the list
+#Step 2: Check how many combinations it has
+#   If it has 1 combination, combine.
+#   If it has 2 available combinations, break and fail
+#   If it has "1.5" an available combination and a currently unavailable combination, add it to another list (1.5 list)
+#Step 3: Make new list (send grammar rules to be executed to a function which handles it)
+#   If this new list is the same as the one before, then check your "1.5 list"
+#       If there are no elements in the list (nothing can be changed) return an exception (unsolveable with current grammar, etc.)
+#       If your 1.5 list has only one element, execute the available grammar rule for that element and make a new list
+#       If this list has more than one element, we copy the sentence and perform the algorithm for each copied sentence (via recursion)
+#Step 4: Return the result of the same function with the new argument of the new sentence (recursion)
+
 
 def isRuleValid(phraseByIndex, sentence, rule):
     splitRule = rule.split()
@@ -44,7 +72,7 @@ def isRuleValid(phraseByIndex, sentence, rule):
     ruleSize = 0
     phrasePositionInRule = 0
     for phrase in splitRule:
-        if phrase == phraseByIndex[sentence]:
+        if phrase == sentence[phraseByIndex]:
             phrasePositionInRule = ruleSize - 1
         ruleSize += 1
 
@@ -58,18 +86,6 @@ def isRuleValid(phraseByIndex, sentence, rule):
             
 
 #TODO: Think about if this would all be easier by creating a Phrase class (with rules applicable, neighbors, etc properties)
-
-#Step 1: Check each element of the list
-#Step 2: Check how many combinations it has
-#   If it has 1 combination, combine.
-#   If it has 2 available combinations, break and fail
-#   If it has "1.5" an available combination and a currently unavailable combination, add it to another list (1.5 list)
-#Step 3: Make new list (send grammar rules to be executed to a function which handles it)
-#   If this new list is the same as the one before, then check your "1.5 list"
-#       If there are no elements in the list (nothing can be changed) return an exception (unsolveable with current grammar, etc.)
-#       If your 1.5 list has only one element, execute the available grammar rule for that element and make a new list
-#       If this list has more than one element, we copy the sentence and perform the algorithm for each copied sentence (via recursion)
-#Step 4: Return the result of the same function with the new argument of the new sentence (recursion)
     
 def findRulesByPhraseType(grammar, phrase):
     rulesAppliedToPhrase = list()
