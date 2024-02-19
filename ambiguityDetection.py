@@ -89,7 +89,7 @@ def executeRules(sentence, rulesAtPosition):
             nextPositionToModify += 1
         newSentence.append(combinationResult)
         nextPositionToModify += ruleSize
-    while nextPositionToModify < len(sentence) - 1:
+    while nextPositionToModify < len(sentence):
         newSentence.append(sentence[nextPositionToModify])
 
 def isRuleValid(phraseByIndex, sentence, rule):
