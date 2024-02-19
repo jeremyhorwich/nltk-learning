@@ -73,23 +73,21 @@ def executeRules(sentence, rulesAtPosition):
     for ruleAndPosition in rulesAtPosition:
         splitRule = ruleAndPosition[0].split()
         combinationResult = ruleAndPosition[1]
-        position = ruleAndPosition[2]
+        positionInSentence = ruleAndPosition[2]
         ruleSize = 0
         anchorPositionInRule = 0
 
-        #Locate the position of our current rule
         #If we ever have a rule with two of the same constituent this will break, but I can't find a real example for this edge case
         for phrase in splitRule:
-            if phrase == sentence[position]:
+            if phrase == sentence[positionInSentence]:
                 anchorPositionInRule = ruleSize
             ruleSize += 1
-        ruleStart = ruleAndPosition[1] - anchorPositionInRule
+        ruleStart = positionInSentence - anchorPositionInRule
         
-        #Start modifying the sentence
         while nextPositionToModify < ruleStart:
             newSentence.append(sentence[nextPositionToModify])
             nextPositionToModify += 1
-        newSentence.append([ruleAndPosition[1]])
+        newSentence.append(combinationResult)
         nextPositionToModify += ruleSize
     while nextPositionToModify < len(sentence) - 1:
         newSentence.append(sentence[nextPositionToModify])
