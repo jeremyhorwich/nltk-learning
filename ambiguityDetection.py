@@ -37,16 +37,24 @@ def detectAmbiguity(sentence, grammar):
     for phrase in phraseList:
         if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
             rulesByPhraseType[phrase] = findRulesByPhraseType(grammar, phrase)
-        
-#Algorithm to check if a combination is available
-#We take the rules by phrase type for the phrase
-#For each rule, we take # of elements and position. So if [a b N c] and our phrase is N, we return (4,2) - > (size, position)
-            
-#While number of elements checked is less than (size)
-#   Check (position + (size - x))
-#Here we would check n + (2-4), n + (2 - (4-1)), n + (2-(4-2)), n + (2-(4-3)) = n - 2, n - 1, n 
-#We need what the index of our N is -> I think we should just save this
-#Now we check each item against the list. If any of them are fails we fail the whole function
+
+def isRuleValid(phraseByIndex, sentence, rule):
+    splitRule = rule.split()
+
+    ruleSize = 0
+    phrasePositionInRule = 0
+    for phrase in splitRule:
+        if phrase == phraseByIndex[sentence]:
+            phrasePositionInRule = ruleSize - 1
+        ruleSize += 1
+
+    #Check appropriate elements of the sentence against our rule
+
+    elementsChecked = 0
+    while (elementsChecked < ruleSize):
+        if (sentence[phraseByIndex - phrasePositionInRule + elementsChecked] == rule[elementsChecked]):
+            return False
+    return True
             
 
 #TODO: Think about if this would all be easier by creating a Phrase class (with rules applicable, neighbors, etc properties)
