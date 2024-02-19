@@ -46,15 +46,17 @@ def findRulesByPhraseType(grammar, phrase):
 grammar = importGrammar("grouchoGrammar.txt")
 detectAmbiguity("I shot an elephant in my pajamas",grammar)
 
-#Step 1: Loop through sentence and replace all of the words with their linguistic abstraction
-#Step 2: We check each element in the list (each current unit of abstraction)
-#   For each unit, we mark down how many combinations it is applicable to in the grammar against the current list
-#   If no combinations, we skip (ie. N next to V) to the next linguistic unit
-#   If only one combination, combine. But we must check against a combination that might not exist yet (see Det N PP)
-#   If two combinations, then we break and return a fail
-#Step 3: Create a new list and run through the loop again
-#Step 4: If our list has only one element (meaning we've created an unambiguous sentence) then we quit loop and return success
-    
-#We have to loop through all keys in the dictionary
-    
+
+
+#Step 1: Check each element of the list
+#Step 2: Check how many combinations it has
+#   If it has 1 combination, combine.
+#   If it has 2 available combinations, break and fail
+#   If it has "1.5" an available combination and a currently unavailable combination, add it to another list (1.5 list)
+#Step 3: Make new list (send grammar rules to be executed to a function which handles it)
+#   If this new list is the same as the one before, then check your "1.5 list"
+#       If there are no elements in the list (nothing can be changed) return an exception (unsolveable with current grammar, etc.)
+#       If your 1.5 list has only one element, execute the available grammar rule for that element and make a new list
+#       If this list has more than one element, we copy the sentence and perform the algorithm for each copied sentence (via recursion)
+#Step 4: Return the result of the same function with the new argument of the new sentence (recursion)
 
