@@ -25,28 +25,19 @@ def parseGrammarRule(lineOfGrammar):
     return grammarRule    
      
 
+# grammar = importGrammar("grouchoGrammar.txt")
+# detectAmbiguity("I shot an elephant in my pajamas",grammar)
+
 def detectAmbiguity(sentence, grammar):
     sentence = sentence.strip(" .!").lower()
     phraseList = sentence.split()
 
     rulesByPhraseType = dict()
-    for i in range(len(phraseList)):
-        phraseList[i] = grammar[phraseList[i]]
-        if phraseList[i] not in rulesByPhraseType:
-            rulesByPhraseType[phraseList[i]] = findRulesByPhraseType(grammar, phraseList[i])
-    print(rulesByPhraseType["NP"])
 
-def findRulesByPhraseType(grammar, phrase):
-    rulesAppliedToPhrase = list()
-    for rule in grammar:
-        if phrase in rule.split():
-            rulesAppliedToPhrase.append(rule)
-    return rulesAppliedToPhrase
-
-grammar = importGrammar("grouchoGrammar.txt")
-detectAmbiguity("I shot an elephant in my pajamas",grammar)
-
-
+    for phrase in phraseList:
+        if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
+            rulesByPhraseType[phrase] = findRulesByPhraseType(grammar, phrase)
+        
 
 #Step 1: Check each element of the list
 #Step 2: Check how many combinations it has
@@ -59,4 +50,10 @@ detectAmbiguity("I shot an elephant in my pajamas",grammar)
 #       If your 1.5 list has only one element, execute the available grammar rule for that element and make a new list
 #       If this list has more than one element, we copy the sentence and perform the algorithm for each copied sentence (via recursion)
 #Step 4: Return the result of the same function with the new argument of the new sentence (recursion)
-
+    
+def findRulesByPhraseType(grammar, phrase):
+    rulesAppliedToPhrase = list()
+    for rule in grammar:
+        if phrase in rule.split():
+            rulesAppliedToPhrase.append(rule)
+    return rulesAppliedToPhrase
