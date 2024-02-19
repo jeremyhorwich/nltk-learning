@@ -46,7 +46,7 @@ def detectAmbiguity(sentence, grammar):
                 validrules += 1
 
         if (numberOfPossibleRules == 1) and (validRules == 1):
-            phrasesToCombine.append(indexInSentence, rulesByPhraseType[phrase][0])
+            phrasesToCombine.append(rulesByPhraseType[phrase][0], indexInSentence)
         if (validRules == 2):
             return True
         if (numberOfPossibleRules > 1):
@@ -65,6 +65,30 @@ def detectAmbiguity(sentence, grammar):
 #       If this list has more than one element, we copy the sentence and perform the algorithm for each copied sentence (via recursion)
 #Step 4: Return the result of the same function with the new argument of the new sentence (recursion)
 
+def executeRules(sentence, rulesAtPosition, grammar):
+    newSentence = list()
+    nextPositionToModify = 0
+    for ruleAndPosition in rulesAtPosition:
+        splitRule = ruleAndPosition[0].split()
+        ruleSize = 0
+        anchorPositionInRule = 0
+
+        #Locate the position of our current rule
+        #If we ever have a rule with two of the same constituent this will break, but I can't find a real example for this edge case
+        for phrase in splitRule:
+            if phrase == sentence[ruleAndPosition[1]]:
+                anchorPositionInRule = ruleSize
+            ruleSize += 1
+        ruleStart = ruleAndPosition[1] - anchorPositionInRule
+        
+        #Start modifying the sentence
+        while nextPositionToModify < ruleStart:
+            newSentence.append(sentence[nextPositionToModify])
+            nextPositionToModify += 1
+        newSentence.append(grammar[ruleAndPosition[0]])
+        nextPositionToModify += ruleSize
+    while nextPositionToModify < len(sentence) - 1:
+        newSentence.append(sentence[nextPositionToModify])
 
 def isRuleValid(phraseByIndex, sentence, rule):
     splitRule = rule.split()
@@ -73,7 +97,7 @@ def isRuleValid(phraseByIndex, sentence, rule):
     phrasePositionInRule = 0
     for phrase in splitRule:
         if phrase == sentence[phraseByIndex]:
-            phrasePositionInRule = ruleSize - 1
+            phrasePositionInRule = ruleSize
         ruleSize += 1
 
     #Check appropriate elements of the sentence against our rule
