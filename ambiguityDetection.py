@@ -28,46 +28,51 @@ def parseGrammarRule(lineOfGrammar):
 # grammar = importGrammar("grouchoGrammar.txt")
 # detectAmbiguity("I shot an elephant in my pajamas",grammar)
 
-def detectAmbiguity(sentence, grammar):
+def detectAmbiguityOfSentence(sentence, grammar, rulesByPhraseType):
     sentence = sentence.strip(" .!").lower()
     phraseList = sentence.split()
 
-    rulesByPhraseType = dict()
+    detectAmbiguity(phraseList, grammar, rulesByPhraseType)
 
-    rulesToExecute = []
+def detectAmbiguity(phraseList, grammar, rulesByPhraseType):
+    if len(phraseList) == 1:
+        return False
+
+    if rulesByPhraseType is None:
+        rulesByPhraseType = dict()
+
+    rulesToExecute = list()
+    possibleAmbiguities = list()
     indexInSentence = 0    #I could loop using the index and save this pointer, but I think phrase is more readable than phraseList[i]
     for phrase in phraseList:
         if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
             rulesByPhraseType[phrase] = findRulesByPhraseType(grammar, phrase)
         
         numberOfPossibleRules = len(findRulesByPhraseType[phrase])
-        validRules = 0
+        validRules = list()
         for rule in rulesByPhraseType[phrase]:
-            if isRuleValid(indexInSentence, sentence, rule):
-                validrules += 1
+            if isRuleValid(indexInSentence, phraseList, rule):
+                validRules.append(rule)
 
-        if (numberOfPossibleRules == 1) and (validRules == 1):
-            applicableRule = rulesByPhraseType[phrase][0]
-            rulesToExecute.append(applicableRule,grammar[applicableRule],indexInSentence)
-        if (validRules == 2):
+        if (len(validRules) > 1):
             return True
+        if (numberOfPossibleRules == 1) and (len(validRules) == 1):
+            rulesToExecute.append(validRules[0],grammar[validRules[0]],indexInSentence)
         if (numberOfPossibleRules > 1):
-            phrasesWithMultiplePossibilities.append(phrase)
+            for rule in validRules:
+                possibleAmbiguities.append(rule, grammar[rule],indexInSentence)
         indexInSentence += 1
 
-#Step 1: Check each element of the list
-#Step 2: Check how many combinations it has
-#   If it has 1 combination, combine.
-#   If it has 2 available combinations, break and fail
-#   If it has "1.5" an available combination and a currently unavailable combination, add it to another list (1.5 list)
-#Step 3: Make new list (send grammar rules to be executed to a function which handles it)
-#   If this new list is the same as the one before, then check your "1.5 list"
-#       If there are no elements in the list (nothing can be changed) return an exception (unsolveable with current grammar, etc.)
-#       If your 1.5 list has only one element, execute the available grammar rule for that element and make a new list
-#       If this list has more than one element, we copy the sentence and perform the algorithm for each copied sentence (via recursion)
-#Step 4: Return the result of the same function with the new argument of the new sentence (recursion)
+    if len(rulesToExecute) > 0:
+        modifiedPhraseList = executeRules(phraseList,rulesToExecute)
+        return detectAmbiguity(modifiedPhraseList, grammar, rulesByPhraseType)
+    for possibleAmbiguity in possibleAmbiguities:
+        branchedPhraseList = executeRules(phraseList,possibleAmbiguity)
+        if  detectAmbiguity(branchedPhraseList,grammar,rulesByPhraseType):
+            return True
+    return False
 
-def executeRules(sentence, rulesAtPosition):
+def executeRules(phraseList, rulesAtPosition):
     newSentence = list()
     nextPositionToModify = 0
     for ruleAndPosition in rulesAtPosition:
@@ -79,26 +84,27 @@ def executeRules(sentence, rulesAtPosition):
 
         #If we ever have a rule with two of the same constituent this will break, but I can't find a real example for this edge case
         for phrase in splitRule:
-            if phrase == sentence[positionInSentence]:
+            if phrase == phraseList[positionInSentence]:
                 anchorPositionInRule = ruleSize
             ruleSize += 1
         ruleStart = positionInSentence - anchorPositionInRule
         
         while nextPositionToModify < ruleStart:
-            newSentence.append(sentence[nextPositionToModify])
+            newSentence.append(phraseList[nextPositionToModify])
             nextPositionToModify += 1
         newSentence.append(combinationResult)
         nextPositionToModify += ruleSize
-    while nextPositionToModify < len(sentence):
-        newSentence.append(sentence[nextPositionToModify])
+    while nextPositionToModify < len(phraseList):
+        newSentence.append(phraseList[nextPositionToModify])
+    return newSentence
 
-def isRuleValid(phraseByIndex, sentence, rule):
+def isRuleValid(phraseByIndex, phraseList, rule):
     splitRule = rule.split()
 
     ruleSize = 0
     phrasePositionInRule = 0
     for phrase in splitRule:
-        if phrase == sentence[phraseByIndex]:
+        if phrase == phraseList[phraseByIndex]:
             phrasePositionInRule = ruleSize
         ruleSize += 1
 
@@ -106,7 +112,7 @@ def isRuleValid(phraseByIndex, sentence, rule):
 
     elementsChecked = 0
     while (elementsChecked < ruleSize):
-        if (sentence[phraseByIndex - phrasePositionInRule + elementsChecked] == rule[elementsChecked]):
+        if (phraseList[phraseByIndex - phrasePositionInRule + elementsChecked] == rule[elementsChecked]):
             return False
     return True
             
