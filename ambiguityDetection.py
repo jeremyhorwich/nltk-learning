@@ -34,6 +34,7 @@ def detectAmbiguity(sentence, grammar):
 
     rulesByPhraseType = dict()
 
+    rulesToExecute = []
     indexInSentence = 0    #I could loop using the index and save this pointer, but I think phrase is more readable than phraseList[i]
     for phrase in phraseList:
         if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
@@ -46,7 +47,8 @@ def detectAmbiguity(sentence, grammar):
                 validrules += 1
 
         if (numberOfPossibleRules == 1) and (validRules == 1):
-            phrasesToCombine.append(rulesByPhraseType[phrase][0], indexInSentence)
+            applicableRule = rulesByPhraseType[phrase][0]
+            rulesToExecute.append(applicableRule,grammar[applicableRule],indexInSentence)
         if (validRules == 2):
             return True
         if (numberOfPossibleRules > 1):
@@ -65,18 +67,20 @@ def detectAmbiguity(sentence, grammar):
 #       If this list has more than one element, we copy the sentence and perform the algorithm for each copied sentence (via recursion)
 #Step 4: Return the result of the same function with the new argument of the new sentence (recursion)
 
-def executeRules(sentence, rulesAtPosition, grammar):
+def executeRules(sentence, rulesAtPosition):
     newSentence = list()
     nextPositionToModify = 0
     for ruleAndPosition in rulesAtPosition:
         splitRule = ruleAndPosition[0].split()
+        combinationResult = ruleAndPosition[1]
+        position = ruleAndPosition[2]
         ruleSize = 0
         anchorPositionInRule = 0
 
         #Locate the position of our current rule
         #If we ever have a rule with two of the same constituent this will break, but I can't find a real example for this edge case
         for phrase in splitRule:
-            if phrase == sentence[ruleAndPosition[1]]:
+            if phrase == sentence[position]:
                 anchorPositionInRule = ruleSize
             ruleSize += 1
         ruleStart = ruleAndPosition[1] - anchorPositionInRule
@@ -85,7 +89,7 @@ def executeRules(sentence, rulesAtPosition, grammar):
         while nextPositionToModify < ruleStart:
             newSentence.append(sentence[nextPositionToModify])
             nextPositionToModify += 1
-        newSentence.append(grammar[ruleAndPosition[0]])
+        newSentence.append([ruleAndPosition[1]])
         nextPositionToModify += ruleSize
     while nextPositionToModify < len(sentence) - 1:
         newSentence.append(sentence[nextPositionToModify])
