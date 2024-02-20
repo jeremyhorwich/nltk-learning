@@ -1,3 +1,12 @@
+def main():
+    grammar = importGrammar("grouchoGrammar.txt")
+    #sentence = input("Enter sentence: ")
+    sentence = "I shot an elephant in my pajamas"
+    if detectAmbiguityOfSentence(sentence,grammar):
+        print("This sentence is ambiguous")
+        return
+    print("This sentence is not ambiguous")
+
 def importGrammar(fileName):
     grammarFile = open("grammars/" + fileName,"r")
     grammar = dict()
@@ -19,13 +28,13 @@ def parseGrammarRule(lineOfGrammar):
         grammarRule[combination.strip("' \n")] = combinationResult
     return grammarRule    
 
-def detectAmbiguityOfSentence(sentence, grammar, rulesByPhraseType):
+def detectAmbiguityOfSentence(sentence, grammar):
     sentence = sentence.strip(" .!").lower()
     phraseList = sentence.split()
 
-    detectAmbiguity(phraseList, grammar, rulesByPhraseType)
+    detectAmbiguity(phraseList, grammar)
 
-def detectAmbiguity(phraseList, grammar, rulesByPhraseType):
+def detectAmbiguity(phraseList, grammar, rulesByPhraseType=None):
     if len(phraseList) == 1:
         return False
 
@@ -39,7 +48,7 @@ def detectAmbiguity(phraseList, grammar, rulesByPhraseType):
         if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
             rulesByPhraseType[phrase] = findRulesByPhraseType(grammar, phrase)
         
-        numberOfPossibleRules = len(findRulesByPhraseType[phrase])
+        numberOfPossibleRules = len(rulesByPhraseType[phrase])
         validRules = list()
         for rule in rulesByPhraseType[phrase]:
             if isRuleValid(indexInSentence, phraseList, rule):
@@ -48,18 +57,21 @@ def detectAmbiguity(phraseList, grammar, rulesByPhraseType):
         if (len(validRules) > 1):
             return True
         if (numberOfPossibleRules == 1) and (len(validRules) == 1):
-            rulesToExecute.append(validRules[0],grammar[validRules[0]],indexInSentence)
+            rulesToExecute.append((validRules[0],grammar[validRules[0]],indexInSentence))
         if (numberOfPossibleRules > 1):
             for rule in validRules:
-                possibleAmbiguities.append(rule, grammar[rule],indexInSentence)
+                possibleAmbiguities.append((rule, grammar[rule],indexInSentence))
         indexInSentence += 1
 
     if len(rulesToExecute) > 0:
         modifiedPhraseList = executeRules(phraseList,rulesToExecute)
-        return detectAmbiguity(modifiedPhraseList, grammar, rulesByPhraseType)
+        return detectAmbiguity(modifiedPhraseList, grammar, rulesByPhraseType=rulesByPhraseType)
+    if len(possibleAmbiguities) == 0:
+        return False                        #If no sentence can be constructed, we'll say it's unambiguous
     for possibleAmbiguity in possibleAmbiguities:
-        branchedPhraseList = executeRules(phraseList,possibleAmbiguity)
-        if  detectAmbiguity(branchedPhraseList,grammar,rulesByPhraseType):
+        #TODO: Because each ambiguity has two branches (two phrases make up one rule) we're doing lots of work twice
+        branchedPhraseList = executeRules(phraseList,[possibleAmbiguity])       #Function called expects a list
+        if  detectAmbiguity(branchedPhraseList,grammar,rulesByPhraseType=rulesByPhraseType):
             return True
     return False
     #TODO: Think about if this would all be easier by creating a Phrase class (with rules applicable, neighbors, etc properties)
@@ -88,6 +100,7 @@ def executeRules(phraseList, rulesAtPosition):
         nextPositionToModify += ruleSize
     while nextPositionToModify < len(phraseList):
         newSentence.append(phraseList[nextPositionToModify])
+        nextPositionToModify += 1
     return newSentence
 
 def isRuleValid(phraseByIndex, phraseList, rule):
@@ -104,8 +117,14 @@ def isRuleValid(phraseByIndex, phraseList, rule):
 
     elementsChecked = 0
     while (elementsChecked < ruleSize):
-        if (phraseList[phraseByIndex - phrasePositionInRule + elementsChecked] == rule[elementsChecked]):
+        indexOfPhraseInSentence = phraseByIndex - phrasePositionInRule + elementsChecked
+        if (indexOfPhraseInSentence < 0) or (indexOfPhraseInSentence >= len(phraseList)):
             return False
+        phraseInSent = phraseList[phraseByIndex - phrasePositionInRule + elementsChecked]
+        phraseInRule = splitRule[elementsChecked]
+        if (phraseList[indexOfPhraseInSentence] != splitRule[elementsChecked]):
+            return False
+        elementsChecked += 1
     return True
                 
 def findRulesByPhraseType(grammar, phrase):
@@ -114,3 +133,6 @@ def findRulesByPhraseType(grammar, phrase):
         if phrase in rule.split():
             rulesAppliedToPhrase.append(rule)
     return rulesAppliedToPhrase
+
+if __name__ == "__main__":
+    main()
