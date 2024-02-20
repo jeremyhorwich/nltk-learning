@@ -1,7 +1,3 @@
-#Determine if a sentence can be parsed more than one way
-
-#Import the grammar
-
 def importGrammar(fileName):
     grammarFile = open("grammars/" + fileName,"r")
     grammar = dict()
@@ -9,7 +5,6 @@ def importGrammar(fileName):
         rule = parseGrammarRule(line)
         grammar.update(rule)
     return grammar
-
 
 def parseGrammarRule(lineOfGrammar):
     splitLHSandRHS = lineOfGrammar.split("->")
@@ -23,10 +18,6 @@ def parseGrammarRule(lineOfGrammar):
     for combination in combinations:
         grammarRule[combination.strip("' \n")] = combinationResult
     return grammarRule    
-     
-
-# grammar = importGrammar("grouchoGrammar.txt")
-# detectAmbiguity("I shot an elephant in my pajamas",grammar)
 
 def detectAmbiguityOfSentence(sentence, grammar, rulesByPhraseType):
     sentence = sentence.strip(" .!").lower()
@@ -71,6 +62,7 @@ def detectAmbiguity(phraseList, grammar, rulesByPhraseType):
         if  detectAmbiguity(branchedPhraseList,grammar,rulesByPhraseType):
             return True
     return False
+    #TODO: Think about if this would all be easier by creating a Phrase class (with rules applicable, neighbors, etc properties)
 
 def executeRules(phraseList, rulesAtPosition):
     newSentence = list()
@@ -115,10 +107,7 @@ def isRuleValid(phraseByIndex, phraseList, rule):
         if (phraseList[phraseByIndex - phrasePositionInRule + elementsChecked] == rule[elementsChecked]):
             return False
     return True
-            
-
-#TODO: Think about if this would all be easier by creating a Phrase class (with rules applicable, neighbors, etc properties)
-    
+                
 def findRulesByPhraseType(grammar, phrase):
     rulesAppliedToPhrase = list()
     for rule in grammar:
