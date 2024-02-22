@@ -1,11 +1,8 @@
 def main():
     grammar = importGrammar("grouchoGrammar.txt")
     #sentence = input("Enter sentence: ")
-    sentence = "I shot an elephant in my pajamas"
-    if detectAmbiguityOfSentence(sentence,grammar):
-        print("This sentence is ambiguous")
-        return
-    print("This sentence is not ambiguous")
+    sentence = "I shot an elephant"
+    print(detectAmbiguityOfSentence(sentence,grammar))
 
 def importGrammar(fileName):
     grammarFile = open("grammars/" + fileName,"r")
@@ -41,59 +38,39 @@ def detectAmbiguity(phraseList, grammar, rulesByPhraseType=None):
     if rulesByPhraseType is None:
         rulesByPhraseType = dict()
 
-    rulesToExecute = list()
-    possibleAmbiguities = list()
+    rulesToExecute = set()
     indexInSentence = 0    #I could loop using the index and save this pointer, but I think phrase is more readable than phraseList[i]
     for phrase in phraseList:
         if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
             rulesByPhraseType[phrase] = findRulesByPhraseType(grammar, phrase)
         
-        numberOfPossibleRules = len(rulesByPhraseType[phrase])
         validRules = list()
         for rule in rulesByPhraseType[phrase]:
             if isRuleValid(indexInSentence, phraseList, rule):
                 validRules.append(rule)
 
-        if (len(validRules) > 1):
+        if len(validRules) > 1:
             return True
-        if (numberOfPossibleRules == 1) and (len(validRules) == 1):
-            rulesToExecute.append((validRules[0],grammar[validRules[0]],indexInSentence))
-        if (numberOfPossibleRules > 1):
-            for rule in validRules:
-                possibleAmbiguities.append((rule, grammar[rule],indexInSentence))
+        if len(validRules) == 0:
+            continue
+        rulesToExecute.add((validRules[0],grammar[validRules[0]],indexInSentence - rule.split().index(phrase)))
         indexInSentence += 1
 
-    if len(rulesToExecute) > 0:
-        modifiedPhraseList = executeRules(phraseList,rulesToExecute)
-        return detectAmbiguity(modifiedPhraseList, grammar, rulesByPhraseType=rulesByPhraseType)
-    if len(possibleAmbiguities) == 0:
-        return False                        #If no sentence can be constructed, we'll say it's unambiguous
-    for possibleAmbiguity in possibleAmbiguities:
-        #TODO: Because each ambiguity has two branches (two phrases make up one rule) we're doing lots of work twice
-        branchedPhraseList = executeRules(phraseList,[possibleAmbiguity])       #Function called expects a list
-        if  detectAmbiguity(branchedPhraseList,grammar,rulesByPhraseType=rulesByPhraseType):
-            return True
-    return False
+    if len(rulesToExecute) == 0:
+        return True
+    modifiedPhraseList = executeRules(phraseList,rulesToExecute)
+    return detectAmbiguity(modifiedPhraseList, grammar, rulesByPhraseType=rulesByPhraseType)
     #TODO: Think about if this would all be easier by creating a Phrase class (with rules applicable, neighbors, etc properties)
 
 def executeRules(phraseList, rulesAtPosition):
     newSentence = list()
     nextPositionToModify = 0
     for ruleAndPosition in rulesAtPosition:
-        splitRule = ruleAndPosition[0].split()
+        ruleSize = len(ruleAndPosition[0].split())
         combinationResult = ruleAndPosition[1]
         positionInSentence = ruleAndPosition[2]
-        ruleSize = 0
-        anchorPositionInRule = 0
-
-        #If we ever have a rule with two of the same constituent this will break, but I can't find a real example for this edge case
-        for phrase in splitRule:
-            if phrase == phraseList[positionInSentence]:
-                anchorPositionInRule = ruleSize
-            ruleSize += 1
-        ruleStart = positionInSentence - anchorPositionInRule
         
-        while nextPositionToModify < ruleStart:
+        while nextPositionToModify < positionInSentence:
             newSentence.append(phraseList[nextPositionToModify])
             nextPositionToModify += 1
         newSentence.append(combinationResult)
@@ -120,8 +97,6 @@ def isRuleValid(phraseByIndex, phraseList, rule):
         indexOfPhraseInSentence = phraseByIndex - phrasePositionInRule + elementsChecked
         if (indexOfPhraseInSentence < 0) or (indexOfPhraseInSentence >= len(phraseList)):
             return False
-        phraseInSent = phraseList[phraseByIndex - phrasePositionInRule + elementsChecked]
-        phraseInRule = splitRule[elementsChecked]
         if (phraseList[indexOfPhraseInSentence] != splitRule[elementsChecked]):
             return False
         elementsChecked += 1
@@ -136,3 +111,7 @@ def findRulesByPhraseType(grammar, phrase):
 
 if __name__ == "__main__":
     main()
+
+
+#New algorithm:
+#Perform every rule available every time. If the sentence turns out not to work then we say it is ambiguous
