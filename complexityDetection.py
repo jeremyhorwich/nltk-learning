@@ -2,7 +2,7 @@ def main():
     grammar = importGrammar("grouchoGrammar.txt")
     #sentence = input("Enter sentence: ")
     sentence = "I shot an elephant"
-    print(detectAmbiguityOfSentence(sentence,grammar))
+    print(isSentenceComplex(sentence,grammar))
 
 def importGrammar(fileName):
     grammarFile = open("grammars/" + fileName,"r")
@@ -25,13 +25,13 @@ def parseGrammarRule(lineOfGrammar):
         grammarRule[combination.strip("' \n")] = combinationResult
     return grammarRule    
 
-def detectAmbiguityOfSentence(sentence, grammar):
+def isSentenceComplex(sentence, grammar):
     sentence = sentence.strip(" .!").lower()
     phraseList = sentence.split()
 
-    detectAmbiguity(phraseList, grammar)
+    isPhraseListComplex(phraseList, grammar)
 
-def detectAmbiguity(phraseList, grammar, rulesByPhraseType=None):
+def isPhraseListComplex(phraseList, grammar, rulesByPhraseType=None):
     if len(phraseList) == 1:
         return False
 
@@ -64,7 +64,7 @@ def detectAmbiguity(phraseList, grammar, rulesByPhraseType=None):
     if len(rulesToExecute) == 0:
         return True
     modifiedPhraseList = executeRules(phraseList,rulesToExecute)
-    return detectAmbiguity(modifiedPhraseList, grammar, rulesByPhraseType=rulesByPhraseType)
+    return isPhraseListComplex(modifiedPhraseList, grammar, rulesByPhraseType=rulesByPhraseType)
     #TODO: Think about if this would all be easier by creating a Phrase class (with rules applicable, neighbors, etc properties)
 
 def executeRules(phraseList, rulesAtPosition):
