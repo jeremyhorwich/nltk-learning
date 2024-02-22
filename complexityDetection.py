@@ -1,7 +1,6 @@
 def main():
     grammar = importGrammar("grouchoGrammar.txt")
-    #sentence = input("Enter sentence: ")
-    sentence = "I shot an elephant"
+    sentence = input("Enter sentence: ")
     print(isSentenceComplex(sentence,grammar))
 
 def importGrammar(fileName):
@@ -29,7 +28,7 @@ def isSentenceComplex(sentence, grammar):
     sentence = sentence.strip(" .!").lower()
     phraseList = sentence.split()
 
-    isPhraseListComplex(phraseList, grammar)
+    return isPhraseListComplex(phraseList, grammar)
 
 def isPhraseListComplex(phraseList, grammar, rulesByPhraseType=None):
     if len(phraseList) == 1:
