@@ -38,7 +38,8 @@ def detectAmbiguity(phraseList, grammar, rulesByPhraseType=None):
     if rulesByPhraseType is None:
         rulesByPhraseType = dict()
 
-    rulesToExecute = set()
+    rulesToExecuteCheck = set()
+    rulesToExecute = list()
     indexInSentence = 0    #I could loop using the index and save this pointer, but I think phrase is more readable than phraseList[i]
     for phrase in phraseList:
         if phrase not in rulesByPhraseType:   #Saving all relevant combinations (subset of full grammar) for time efficiency reasons
@@ -52,8 +53,12 @@ def detectAmbiguity(phraseList, grammar, rulesByPhraseType=None):
         if len(validRules) > 1:
             return True
         if len(validRules) == 0:
+            indexInSentence += 1
             continue
-        rulesToExecute.add((validRules[0],grammar[validRules[0]],indexInSentence - rule.split().index(phrase)))
+        ruleToAppend = (validRules[0],grammar[validRules[0]],indexInSentence - validRules[0].split().index(phrase))
+        if ruleToAppend not in rulesToExecuteCheck:
+            rulesToExecuteCheck.add(ruleToAppend)
+            rulesToExecute.append(ruleToAppend)
         indexInSentence += 1
 
     if len(rulesToExecute) == 0:
