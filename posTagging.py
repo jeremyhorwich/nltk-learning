@@ -18,7 +18,7 @@ def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, 
     parsedNGrams = list(ngrams(modifiedCorpus),nGram)
     return Counter(parsedNGrams).most_common(mostCommonThreshold)
 
-def createPOSDefinitionsFromNGrams():
+def createPOSDefinitionsFromNGrams(nGrams: list) -> list:
     #Discard any entries which describe the end of a sentence (any whose definition is a period)
     #Need to handle case of gram with more than one definition (take definition with greater frequency - just check
     #if it is already in the return dictionary and compare its frequency with that in the return)
