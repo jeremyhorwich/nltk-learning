@@ -1,11 +1,13 @@
 from nltk.util import ngrams
+from nltk.corpus import brown
 from collections import Counter
 
 #Train using existing data
 
 def getSampleData():
-    #Use Brown corpus for data
-    pass
+    return brown.tagged_words(categories="news", tagset="universal")
+
+getSampleData()
 
 def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, nGram: int) -> list[str]:
     modifiedCorpus = ["." for i in range(0,nGram - 1)]      #Padding the beginning so we count how the first sentence starts
