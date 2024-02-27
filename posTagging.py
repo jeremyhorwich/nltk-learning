@@ -2,7 +2,7 @@ from nltk.util import ngrams
 from nltk.corpus import brown
 from collections import Counter
 
-def trainModel(mostCommonThreshold):
+def trainModel(mostCommonThreshold: int):
     unigramDefinitions, posCorpus = getSampleData()
 
     mostCommonPOS = Counter([unigram[1] for unigram in unigramDefinitions]).most_common(1)
@@ -22,7 +22,7 @@ def getSampleData():
     isolatedTags = [tag for (word,tag) in brownTaggedWords]
     return brownTaggedWords, isolatedTags
 
-def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, nGram: int) -> list[str]:
+def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, nGram: int) -> Counter:
     modifiedCorpus = ["." for i in range(0,nGram - 1)]      #Padding the beginning so we count how the first sentence starts
     for token in tokenizedCorpus:
         if token.isalpha():
@@ -33,18 +33,19 @@ def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, 
     parsedNGrams = list(ngrams(modifiedCorpus),nGram)
     return Counter(parsedNGrams).most_common(mostCommonThreshold)
 
-def filterUsefulNGrams(nGramsWithCounts: list[str]) -> list:
+def filterUsefulNGrams(nGramsWithCounts: list[str]) -> dict:
     filteredNGramsWithCounts = dict()
     for gram in nGramsWithCounts:
         if not gram[-1].isalpha():
             continue
-        if gram[:-1] in filteredNGramsWithCounts:
+        if gram in filteredNGramsWithCounts: #This logic is just a little too long for me to want to put it in a dict comprehension
             frequencyOfPotentialReplacement = nGramsWithCounts[gram]
-            frequencyOfExistingDefinition = nGramsWithCounts[filteredNGramsWithCounts[gram[:-1]]][1]
-            if frequencyOfPotentialReplacement > frequencyOfExistingDefinition:
-                filteredNGramsWithCounts[gram[:-1]] = [gram[-1],nGramsWithCounts[gram]]
-    #We don't need the counts anymore
-    cleanNGramList = {nGram:filteredNGramsWithCounts[nGram][0] for nGram in filteredNGramsWithCounts}
+            frequencyOfExistingDefinition = filteredNGramsWithCounts[gram]
+            if frequencyOfPotentialReplacement < frequencyOfExistingDefinition:
+                continue
+        filteredNGramsWithCounts[gram] = nGramsWithCounts[gram]
+    #We don't need the counts anymore, so we can construct our dictionary based on existing information and prediction
+    cleanNGramList = {gram[:-1]:gram[-1] for gram in filteredNGramsWithCounts}
     return cleanNGramList
 
 #Give us the option to export the results
