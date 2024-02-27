@@ -1,4 +1,3 @@
-from nltk import pos_tag as posTag
 from nltk.util import ngrams
 from nltk.corpus import brown
 from collections import Counter
@@ -55,8 +54,9 @@ def testModel():
     pass
 
 def getTestData():
-    #Tokenize the test data
-    pass
+    brownTaggedWords = brown.tagged_words(categories="news", tagset="universal")        #TODO: Simply split one category in two
+    isolatedTags = [tag for (word,tag) in brownTaggedWords]
+    return brownTaggedWords, isolatedTags
 
 def tagWords(tokenizedWords: list[str], defaultPOS: str, unigrams: dict, bigrams: dict, trigrams: dict) -> list[str]:
     tags = list()
@@ -75,8 +75,9 @@ def tagWords(tokenizedWords: list[str], defaultPOS: str, unigrams: dict, bigrams
         tags.append(defaultPOS)
     return tags
 
-def calculateAccuracyOfTags(tokenizedWords: list[str], predictedTags: list[str]) -> float:
-    nltkWordTags = posTag(tokenizedWords)
-    accurateTags = [wordTag[1] for wordTag in nltkWordTags]
-    #Afterwards, compare results against NLTK's POS tagger and spit out our accuracy
-    pass
+def calculateAccuracyOfTags(accurateTags: list[str], predictedTags: list[str]) -> float:
+    accuratePredictions = 0
+    for i in range(0,len(accurateTags)):
+        if accurateTags[i] == predictedTags[i]:
+            accuratePredictions += 1
+    return (accuratePredictions / len(accurateTags))
