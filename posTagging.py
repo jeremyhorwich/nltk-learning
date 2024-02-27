@@ -15,7 +15,7 @@ def trainModel(mostCommonThreshold: int):
     mostCommonTrigrams = getMostFrequestNGrams(posCorpus,mostCommonThreshold,3)
     trigrams = filterUsefulNGrams(mostCommonTrigrams)
 
-    return mostCommonPOS, unigrams, bigrams, trigrams
+    return (mostCommonPOS, unigrams, bigrams, trigrams)
 
 def getSampleData():
     brownTaggedWords = brown.tagged_words(categories="lore", tagset="universal")
@@ -50,15 +50,26 @@ def filterUsefulNGrams(nGramsWithCounts: list[str]) -> dict:
 
 #Give us the option to export the results
 
-def testModel():
-    pass
+def testModel(trainedModel):
+    wordsToTag, accurateTags = getTestData()
+    predictedTags = tagWords(wordsToTag, trainedModel)
+    accuracy = calculateAccuracyOfTags(accurateTags, predictedTags)
+    print(accuracy)
+    return
 
 def getTestData():
     brownTaggedWords = brown.tagged_words(categories="news", tagset="universal")        #TODO: Simply split one category in two
+    isolatedWords = [word for (word, tag) in brownTaggedWords]
     isolatedTags = [tag for (word,tag) in brownTaggedWords]
-    return brownTaggedWords, isolatedTags
+    return isolatedWords, isolatedTags
 
-def tagWords(tokenizedWords: list[str], defaultPOS: str, unigrams: dict, bigrams: dict, trigrams: dict) -> list[str]:
+def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
+    defaultPOS, unigrams, bigrams, trigrams = trainedModel
+    if defaultPOS is None or type(defaultPOS) is not str:
+        raise Exception("Model in unexpected format")
+    for object in (unigrams, bigrams, trigrams):
+        if object is None or type(object) is not dict:
+            raise Exception("Model in unexpected format")
     tags = list()
     for i, word in enumerate(tokenizedWords):
         if not word.isalpha():                  #Tagging punctuation will artificially inflate accuracy of results
