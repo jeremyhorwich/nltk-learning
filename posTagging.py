@@ -1,3 +1,4 @@
+from nltk import pos_tag as posTag
 from nltk.util import ngrams
 from nltk.corpus import brown
 from collections import Counter
@@ -74,6 +75,8 @@ def tagWords(tokenizedWords: list[str], defaultPOS: str, unigrams: dict, bigrams
         tags.append(defaultPOS)
     return tags
 
-def calculateAccuracyOfTags():
+def calculateAccuracyOfTags(tokenizedWords: list[str], predictedTags: list[str]) -> float:
+    nltkWordTags = posTag(tokenizedWords)
+    accurateTags = [wordTag[1] for wordTag in nltkWordTags]
     #Afterwards, compare results against NLTK's POS tagger and spit out our accuracy
     pass
