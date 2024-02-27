@@ -57,7 +57,20 @@ def getTestData():
     #Tokenize the test data
     pass
 
-def tagWords():
+def tagWords(tokenizedWords: list[str], defaultPOS: str, unigrams: dict, bigrams: dict, trigrams: dict) -> list[str]:
+    tags = list()
+    for i, word in enumerate(tokenizedWords):
+        if word in unigrams:
+            tags.append(unigrams[word])
+            continue
+        if [tokenizedWords[i-1], word] in trigrams:
+            tags.append(trigrams[[tokenizedWords[i-1], word]])
+            continue
+        if word in bigrams:
+            tags.append(bigrams(word))
+            continue
+        tags.append(defaultPOS)
+    return tags
     #Convert as many of the unigrams as possible into POS using data from above
     #Loop through the test data. For each word:
     #   If our next word is part of a known trigram, use that
