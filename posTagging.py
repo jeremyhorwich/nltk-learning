@@ -60,7 +60,9 @@ def getTestData():
 def tagWords(tokenizedWords: list[str], defaultPOS: str, unigrams: dict, bigrams: dict, trigrams: dict) -> list[str]:
     tags = list()
     for i, word in enumerate(tokenizedWords):
-        if word in unigrams:
+        if not word.isalpha():                  #Tagging punctuation will artificially inflate accuracy of results
+            continue
+        if word in unigrams:                    #We do unigrams first because direct POS definitions for each word are ideal
             tags.append(unigrams[word])
             continue
         if [tokenizedWords[i-1], word] in trigrams:
@@ -71,12 +73,6 @@ def tagWords(tokenizedWords: list[str], defaultPOS: str, unigrams: dict, bigrams
             continue
         tags.append(defaultPOS)
     return tags
-    #Convert as many of the unigrams as possible into POS using data from above
-    #Loop through the test data. For each word:
-    #   If our next word is part of a known trigram, use that
-    #   Otherwise if our next word is part of a known bigram, use that
-    #   Otherwise use our default value
-    pass
 
 def calculateAccuracyOfTags():
     #Afterwards, compare results against NLTK's POS tagger and spit out our accuracy
