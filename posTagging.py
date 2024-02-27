@@ -2,29 +2,25 @@ from nltk.util import ngrams
 from nltk.corpus import brown
 from collections import Counter
 
-#Train using existing data
-
 def trainModel(mostCommonThreshold):
     unigramDefinitions, posCorpus = getSampleData()
+
+    mostCommonPOS = Counter([unigram[1] for unigram in unigramDefinitions]).most_common(1)
     mostCommonUnigrams = Counter(unigramDefinitions).most_common(mostCommonThreshold)
-    #Clean 100 most common (w,t pairings)
+    unigrams = filterUsefulNGrams(mostCommonUnigrams)
+
     mostCommonBigrams = getMostFrequestNGrams(posCorpus,mostCommonThreshold,2)
+    bigrams = filterUsefulNGrams(mostCommonBigrams)
+
     mostCommonTrigrams = getMostFrequestNGrams(posCorpus,mostCommonThreshold,3)
-    #Clean bigram and trigram pairings
-    #Return: 100 most common of (unigram -> POS), (bigram), (trigram)
-    pass
+    trigrams = filterUsefulNGrams(mostCommonTrigrams)
+
+    return mostCommonPOS, unigrams, bigrams, trigrams
 
 def getSampleData():
     brownTaggedWords = brown.tagged_words(categories="lore", tagset="universal")
     isolatedTags = [tag for (word,tag) in brownTaggedWords]
     return brownTaggedWords, isolatedTags
-
-'''
-Looks like we need this information two ways:
-
-(1) We need the 100 most common (w, t) pairings
-(2) For (w1,t1),(w2,t2),...,(wN,tN) we need (t1,t2,...tN)
-'''
 
 def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, nGram: int) -> list[str]:
     modifiedCorpus = ["." for i in range(0,nGram - 1)]      #Padding the beginning so we count how the first sentence starts
@@ -51,8 +47,6 @@ def filterUsefulNGrams(nGramsWithCounts: list[str]) -> list:
     cleanNGramList = {nGram:filteredNGramsWithCounts[nGram][0] for nGram in filteredNGramsWithCounts}
     return cleanNGramList
 
-
-#Also count the most common unigram so we have a default value to fall back on
 #Give us the option to export the results
 
 #Make predictions using trained model
