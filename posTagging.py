@@ -33,17 +33,19 @@ def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, 
     parsedNGrams = list(ngrams(modifiedCorpus),nGram)
     return Counter(parsedNGrams).most_common(mostCommonThreshold)
 
-def filterUsefulNGrams(nGramsWithCounts: list[str]) -> dict:
+def filterUsefulNGrams(nGramsWithCounts: list[tuple]) -> dict:
     filteredNGramsWithCounts = dict()
-    for gram in nGramsWithCounts:
-        if not gram[-1].isalpha():
+    for gramCounter in nGramsWithCounts:
+        gram = gramCounter[0]
+        count = gramCounter[1]
+        if not gram.isalpha():
             continue
         if gram in filteredNGramsWithCounts: #This logic is just a little too long for me to want to put it in a dict comprehension
-            frequencyOfPotentialReplacement = nGramsWithCounts[gram]
+            frequencyOfPotentialReplacement = count
             frequencyOfExistingDefinition = filteredNGramsWithCounts[gram]
             if frequencyOfPotentialReplacement < frequencyOfExistingDefinition:
                 continue
-        filteredNGramsWithCounts[gram] = nGramsWithCounts[gram]
+        filteredNGramsWithCounts[gram] = count
     #We don't need the counts anymore, so we can construct our dictionary based on existing information and prediction
     cleanNGramList = {gram[:-1]:gram[-1] for gram in filteredNGramsWithCounts}
     return cleanNGramList
@@ -92,3 +94,11 @@ def calculateAccuracyOfTags(accurateTags: list[str], predictedTags: list[str]) -
         if accurateTags[i] == predictedTags[i]:
             accuratePredictions += 1
     return (accuratePredictions / len(accurateTags))
+
+def main():
+    trainedModel = trainModel(100)
+    testModel(trainedModel)
+    return
+
+if __name__ == "__main__":
+    main()
