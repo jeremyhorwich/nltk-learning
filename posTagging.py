@@ -30,7 +30,7 @@ def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, 
             continue
         for i in range(0,nGram - 1):
             modifiedCorpus.append(".")
-    parsedNGrams = list(ngrams(modifiedCorpus),nGram)
+    parsedNGrams = list(ngrams(modifiedCorpus,nGram))
     return Counter(parsedNGrams).most_common(mostCommonThreshold)
 
 def filterUsefulNGrams(nGramsWithCounts: list[tuple]) -> dict:
@@ -38,7 +38,7 @@ def filterUsefulNGrams(nGramsWithCounts: list[tuple]) -> dict:
     for gramCounter in nGramsWithCounts:
         gram = gramCounter[0]
         count = gramCounter[1]
-        if not gram.isalpha():
+        if not gram[-1].isalpha():
             continue
         if gram in filteredNGramsWithCounts: #This logic is just a little too long for me to want to put it in a dict comprehension
             frequencyOfPotentialReplacement = count
