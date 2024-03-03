@@ -53,13 +53,37 @@ def filterUsefulNGrams(nGramsWithCounts: list[tuple]) -> dict:
     cleanNGramList = {gram[:-1]:gram[-1] for gram in filteredNGramsWithCounts}
     return cleanNGramList
 
-def exportModel(trainedModel,fileName: str) -> None:
-    with open(os.path.join("tmp", fileName + ".pkl"),"wb") as export:
+def exportModel(trainedModel,fileName: str) -> bool:
+    modelNameValid = False
+    while (not modelNameValid):
+        modelName = input("Save model as ")
+        if modelName.lower() == "quit":
+            break
+        if not modelName.isalnum():
+            print("Model name not alphanumeric")
+            continue
+        modelNameValid = True
+    
+    if not modelNameValid:
+        return False
+    
+    modelPath = os.path.join("tmp", fileName + ".pkl")
+
+    if os.path.isfile(modelPath):
+        os.remove(modelPath)
+
+    with open(modelPath,"wb") as export:
             pickle.dump(trainedModel,export)
     return
 
 def importModel(fileName: str) -> tuple:
-    with open(os.path.join("tmp",fileName + ".pkl"),"rb") as importedModel:
+
+    filePath = os.path.join("tmp",fileName + ".pkl")
+
+    if not os.path.isfile(filePath):
+        return None
+
+    with open(filePath,"rb") as importedModel:
         trainedModel = pickle.load(importedModel)
     return trainedModel
 
@@ -103,8 +127,6 @@ def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
         tags.append(defaultPOS)
     return tags
 
-#TODO: Why are we replacing all our words with the default? Look at above tagWords function. Also ending up with fewer tags than we started with. 
-
 def calculateAccuracyOfTags(accurateTags: list[str], predictedTags: list[str]) -> float:
     accuratePredictions = 0
     for i in range(0,len(accurateTags)):
@@ -112,13 +134,47 @@ def calculateAccuracyOfTags(accurateTags: list[str], predictedTags: list[str]) -
             accuratePredictions += 1
     return (accuratePredictions / len(accurateTags))
 
-#TODO: Wrap exporting and importing in simple command line inputs
+def getModelFromUserInput():
+    trainingModelFound = False
+    while (not trainingModelFound):
+        modelYN = input("Import model? Y/N ")
+        if modelYN.lower() == "quit":
+            break
+        if modelYN.lower() == "y":
+            modelName = input("Name of model? ")
+            if modelName.lower() == "quit":
+                break
+            trainedModel = importModel(modelName)
+            if trainedModel is None:
+                print("Model not found")
+                continue
+            return trainedModel
+        if modelYN.lower() == "n":
+            modelLength = input("Model length? ")
+            if modelLength.lower() == "quit":
+                break
+            if not modelLength.isdigit():
+                print("Enter an integer")
+                continue
+            modelLength = int(modelLength)
+            if not 0 < modelLength < 5000:
+                print("Model length not in acceptable range")
+                continue
+            trainedModel = trainModel(modelLength)
+            exportModelYN = input("Export model? Y for export ")
+            if exportModelYN.lower() == "y":
+                exportModel(trainedModel)
+            return trainedModel
+    return None
 
 def main():
+    trainedModel = getModelFromUserInput()
+    if trainedModel is None:
+        return
+    testModel(trainedModel)
     #trainedModel = trainModel(100)
     #exportModel(trainedModel,"model")
-    trainedModel = importModel("model")
-    testModel(trainedModel)
+    #trainedModel = importModel("model")
     return
 
 if __name__ == "__main__":
