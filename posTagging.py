@@ -9,7 +9,7 @@ def trainModel(mostCommonThreshold: int):
 
     #Counter returns type of list of tuple with count at end, so in order to get mostCommonPOS we need first element of first tuple
     mostCommonPOS = str((Counter([unigram[1] for unigram in unigramDefinitions]).most_common(1))[0][0]).replace(",","")
-    mostCommonUnigrams = Counter(unigramDefinitions).most_common(mostCommonThreshold)
+    mostCommonUnigrams = Counter(unigramDefinitions).most_common(round(mostCommonThreshold/10))
     unigrams = filterUsefulNGrams(mostCommonUnigrams)
 
     mostCommonBigrams = getMostFrequestNGrams(posCorpus,mostCommonThreshold,2)
@@ -21,9 +21,10 @@ def trainModel(mostCommonThreshold: int):
     return (mostCommonPOS, unigrams, bigrams, trigrams)
 
 def getSampleData():
-    brownTaggedWords = brown.tagged_words(categories="lore", tagset="universal")
-    isolatedTags = [tag for (word,tag) in brownTaggedWords]
-    return brownTaggedWords, isolatedTags
+    brownTaggedWords = brown.tagged_words(categories="news", tagset="universal")
+    trainingWords = brownTaggedWords[(len(brownTaggedWords)//2):]
+    isolatedTags = [tag for (word,tag) in trainingWords]
+    return trainingWords, isolatedTags
 
 def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, nGram: int) -> Counter:
     modifiedCorpus = ["." for i in range(0,nGram - 1)]      #Padding the beginning so we count how the first sentence starts
@@ -87,16 +88,17 @@ def importModel(fileName: str) -> tuple:
     return trainedModel
 
 def testModel(trainedModel):
-    wordsToTag, accurateTags = getTestData()            #TODO: Why is the length of these lists when nonalpha'd different?
+    wordsToTag, accurateTags = getTestData()            
     predictedTags = tagWords(wordsToTag, trainedModel)
     accuracy = calculateAccuracyOfTags(accurateTags, predictedTags)
-    print(accuracy)
+    print("Accuracy of model: ",accuracy)
     return
 
 def getTestData():
-    brownTaggedWords = brown.tagged_words(categories="news", tagset="universal")        #TODO: Simply split one category in two
-    isolatedWords = [word for (word, tag) in brownTaggedWords]
-    isolatedTags = [tag for (word,tag) in brownTaggedWords if word.isalpha()]
+    brownTaggedWords = brown.tagged_words(categories="news", tagset="universal")
+    testWords = brownTaggedWords[:(len(brownTaggedWords)//2)]
+    isolatedWords = [word for (word, tag) in testWords]
+    isolatedTags = [tag for (word,tag) in testWords if word.isalpha()]
     return isolatedWords, isolatedTags
 
 def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
@@ -171,9 +173,6 @@ def main():
     if trainedModel is None:
         return
     testModel(trainedModel)
-    #trainedModel = trainModel(100)
-    #exportModel(trainedModel,"model")
-    #trainedModel = importModel("model")
     return
 
 if __name__ == "__main__":
