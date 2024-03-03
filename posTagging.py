@@ -53,7 +53,7 @@ def filterUsefulNGrams(nGramsWithCounts: list[tuple]) -> dict:
     cleanNGramList = {gram[:-1]:gram[-1] for gram in filteredNGramsWithCounts}
     return cleanNGramList
 
-def exportModel(trainedModel,fileName: str) -> bool:
+def exportModel(trainedModel) -> bool:
     modelNameValid = False
     while (not modelNameValid):
         modelName = input("Save model as ")
@@ -67,7 +67,7 @@ def exportModel(trainedModel,fileName: str) -> bool:
     if not modelNameValid:
         return False
     
-    modelPath = os.path.join("tmp", fileName + ".pkl")
+    modelPath = os.path.join("tmp", modelName + ".pkl")
 
     if os.path.isfile(modelPath):
         os.remove(modelPath)
@@ -77,7 +77,6 @@ def exportModel(trainedModel,fileName: str) -> bool:
     return
 
 def importModel(fileName: str) -> tuple:
-
     filePath = os.path.join("tmp",fileName + ".pkl")
 
     if not os.path.isfile(filePath):
