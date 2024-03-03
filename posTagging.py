@@ -64,7 +64,7 @@ def importModel(fileName: str) -> tuple:
     return trainedModel
 
 def testModel(trainedModel):
-    wordsToTag, accurateTags = getTestData()
+    wordsToTag, accurateTags = getTestData()            #TODO: Why is the length of these lists when nonalpha'd different?
     predictedTags = tagWords(wordsToTag, trainedModel)
     accuracy = calculateAccuracyOfTags(accurateTags, predictedTags)
     print(accuracy)
@@ -73,12 +73,11 @@ def testModel(trainedModel):
 def getTestData():
     brownTaggedWords = brown.tagged_words(categories="news", tagset="universal")        #TODO: Simply split one category in two
     isolatedWords = [word for (word, tag) in brownTaggedWords]
-    isolatedTags = [tag for (word,tag) in brownTaggedWords]
+    isolatedTags = [tag for (word,tag) in brownTaggedWords if word.isalpha()]
     return isolatedWords, isolatedTags
 
 def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
     defaultPOS, unigrams, bigrams, trigrams = trainedModel
-    print(len(tokenizedWords))
 
     if defaultPOS is None or type(defaultPOS) is not str:
         raise Exception("Model in unexpected format")
@@ -116,7 +115,7 @@ def main():
     #trainedModel = trainModel(100)
     #exportModel(trainedModel,"model")
     trainedModel = importModel("model")
-    #testModel(trainedModel)
+    testModel(trainedModel)
     return
 
 if __name__ == "__main__":
