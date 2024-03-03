@@ -5,7 +5,8 @@ from collections import Counter
 def trainModel(mostCommonThreshold: int):
     unigramDefinitions, posCorpus = getSampleData()
 
-    mostCommonPOS = Counter([unigram[1] for unigram in unigramDefinitions]).most_common(1)
+    #Counter returns type of list of tuple with count at end, so in order to get mostCommonPOS we need first element of first tuple
+    mostCommonPOS = str((Counter([unigram[1] for unigram in unigramDefinitions]).most_common(1))[0][0]).replace(",","")
     mostCommonUnigrams = Counter(unigramDefinitions).most_common(mostCommonThreshold)
     unigrams = filterUsefulNGrams(mostCommonUnigrams)
 
@@ -26,7 +27,7 @@ def getMostFrequestNGrams(tokenizedCorpus: list[str], mostCommonThreshold: int, 
     modifiedCorpus = ["." for i in range(0,nGram - 1)]      #Padding the beginning so we count how the first sentence starts
     for token in tokenizedCorpus:
         if token.isalpha():
-            modifiedCorpus.append(token.lower())
+            modifiedCorpus.append(token.upper())
             continue
         for i in range(0,nGram - 1):
             modifiedCorpus.append(".")
@@ -67,6 +68,9 @@ def getTestData():
 
 def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
     defaultPOS, unigrams, bigrams, trigrams = trainedModel
+
+    print(len(tokenizedWords))
+
     if defaultPOS is None or type(defaultPOS) is not str:
         raise Exception("Model in unexpected format")
     for object in (unigrams, bigrams, trigrams):
@@ -79,7 +83,7 @@ def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
         if word in unigrams:                    #We do unigrams first because direct POS definitions for each word are ideal
             tags.append(unigrams[word])
             continue
-        if [tokenizedWords[i-1], word] in trigrams:
+        if (tokenizedWords[i-1], word) in trigrams:
             tags.append(trigrams[[tokenizedWords[i-1], word]])
             continue
         if word in bigrams:
@@ -87,6 +91,8 @@ def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
             continue
         tags.append(defaultPOS)
     return tags
+
+#TODO: Why are we replacing all our words with the default? Look at above tagWords function. Also ending up with fewer tags than we started with. 
 
 def calculateAccuracyOfTags(accurateTags: list[str], predictedTags: list[str]) -> float:
     accuratePredictions = 0
