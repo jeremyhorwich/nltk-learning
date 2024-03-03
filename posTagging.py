@@ -85,17 +85,20 @@ def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
         if object is None or type(object) is not dict:
             raise Exception("Model in unexpected format")
     tags = list()
-    for i, word in enumerate(tokenizedWords):
-        if not word.isalpha():                  #Tagging punctuation will artificially inflate accuracy of results
+    i = -1                                          #We'll start at i=0 when we hit our first alpha word
+    for word in tokenizedWords:
+        if not word.isalpha():                      #Tagging punctuation will artificially inflate accuracy of results
             continue
-        if word in unigrams:                    #We do unigrams first because direct POS definitions for each word are ideal
-            tags.append(unigrams[word])
+        i += 1
+        word = word.lower()
+        if (word,) in unigrams:                     #We do unigrams first because direct POS definitions for each word are ideal
+            tags.append(unigrams[(word,)])
             continue
-        if (tokenizedWords[i-1], word) in trigrams:
-            tags.append(trigrams[[tokenizedWords[i-1], word]])
+        if (tags[i-2], tags[i-1]) in trigrams:
+            tags.append(trigrams[(tags[i-2], tags[i-1])])
             continue
-        if word in bigrams:
-            tags.append(bigrams(word))
+        if (tags[i-1],) in bigrams:
+            tags.append(bigrams[(tags[i-1],)])
             continue
         tags.append(defaultPOS)
     return tags
