@@ -1,6 +1,8 @@
 from nltk.util import ngrams
 from nltk.corpus import brown
 from collections import Counter
+import pickle
+import os
 
 def trainModel(mostCommonThreshold: int):
     unigramDefinitions, posCorpus = getSampleData()
@@ -51,7 +53,15 @@ def filterUsefulNGrams(nGramsWithCounts: list[tuple]) -> dict:
     cleanNGramList = {gram[:-1]:gram[-1] for gram in filteredNGramsWithCounts}
     return cleanNGramList
 
-#Give us the option to export the results
+def exportModel(trainedModel,fileName: str) -> None:
+    with open(os.path.join("tmp", fileName + ".pkl"),"wb") as export:
+            pickle.dump(trainedModel,export)
+    return
+
+def importModel(fileName: str) -> tuple:
+    with open(os.path.join("tmp",fileName + ".pkl"),"rb") as importedModel:
+        trainedModel = pickle.load(importedModel)
+    return trainedModel
 
 def testModel(trainedModel):
     wordsToTag, accurateTags = getTestData()
@@ -68,7 +78,6 @@ def getTestData():
 
 def tagWords(tokenizedWords: list[str], trainedModel) -> list[str]:
     defaultPOS, unigrams, bigrams, trigrams = trainedModel
-
     print(len(tokenizedWords))
 
     if defaultPOS is None or type(defaultPOS) is not str:
@@ -101,9 +110,13 @@ def calculateAccuracyOfTags(accurateTags: list[str], predictedTags: list[str]) -
             accuratePredictions += 1
     return (accuratePredictions / len(accurateTags))
 
+#TODO: Wrap exporting and importing in simple command line inputs
+
 def main():
-    trainedModel = trainModel(100)
-    testModel(trainedModel)
+    #trainedModel = trainModel(100)
+    #exportModel(trainedModel,"model")
+    trainedModel = importModel("model")
+    #testModel(trainedModel)
     return
 
 if __name__ == "__main__":
